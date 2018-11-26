@@ -1,8 +1,6 @@
 package shortages;
 
-import enums.DeliverySchema;
 import external.CurrentStock;
-import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -22,12 +20,15 @@ class ShortageSomething {
 
     public Shortages findShortages() {
         long level = stock.getLevel();
-        Shortages.Builder shortage = Shortages.builder(outputs.getProductRefNo(), LocalDate.now());
+        Shortages.Builder shortage = Shortages.builder(
+                outputs.getProductRefNo(),
+                LocalDate.now()
+        );
         for (LocalDate day : dates) {
             Demands.Demand demand = demandsPerDay.get(day);
-
             long produced = outputs.get(day);
-            long levelOnDelivery = demand.getLevelOnDelivery(level, produced);
+
+            long levelOnDelivery = demand.calculate(level, produced);
 
             if (levelOnDelivery < 0) {
                 shortage.forDay(day, levelOnDelivery);
@@ -36,23 +37,6 @@ class ShortageSomething {
             level = endOfDayLevel >= 0 ? endOfDayLevel : 0;
         }
         return shortage.build();
-    }
-
-
-    private long getLevelOnDelivery(long level, Demands.Demand demand, long produced) {
-        long levelOnDelivery;
-        if (demand.getDeliverySchema() == DeliverySchema.atDayStart) {
-            levelOnDelivery = level - demand.getLevel();
-        } else if (demand.getDeliverySchema() == DeliverySchema.tillEndOfDay) {
-            levelOnDelivery = level - demand.getLevel() + produced;
-        } else if (demand.getDeliverySchema() == DeliverySchema.every3hours) {
-            // TODO WTF ?? we need to rewrite that app :/
-            throw new NotImplementedException();
-        } else {
-            // TODO implement other variants
-            throw new NotImplementedException();
-        }
-        return levelOnDelivery;
     }
 
 }

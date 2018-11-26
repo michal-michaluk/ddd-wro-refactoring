@@ -1,6 +1,8 @@
 package shortages;
 
 import entities.DemandEntity;
+import enums.DeliverySchema;
+import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 import tools.Util;
 
 import java.util.List;
@@ -21,9 +23,22 @@ class DemandRepository {
                 .collect(toMap(
                         DemandEntity::getDay,
                         demand -> new Demands.Demand(
-                                Util.getDeliverySchema(demand),
-                                Util.getLevel(demand)
+                                Util.getLevel(demand),
+                                mapToCalculation(Util.getDeliverySchema(demand))
                         )
                 )));
+    }
+
+    private LevelOnDeliveryCalculation mapToCalculation(DeliverySchema deliverySchema) {
+        if (deliverySchema == DeliverySchema.atDayStart) {
+            return LevelOnDeliveryCalculation.AtDayStart;
+        } else if (deliverySchema == DeliverySchema.tillEndOfDay) {
+            return LevelOnDeliveryCalculation.TillEndOfDay;
+        } else {
+            // TODO implement other variants
+            return (level, demand, produced) -> {
+                throw new NotImplementedException();
+            };
+        }
     }
 }

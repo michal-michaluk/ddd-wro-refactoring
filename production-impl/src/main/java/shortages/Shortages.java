@@ -3,37 +3,53 @@ package shortages;
 import java.time.LocalDate;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.function.BiFunction;
+import java.util.stream.Stream;
 
-public class Shortages {
+class Shortages {
+
     private final String productRefNo;
     private final LocalDate date;
     private final Map<LocalDate, Long> shortages;
 
-    public Shortages(String productRefNo, LocalDate date, Map<LocalDate, Long> shortages) {
+    Shortages(String productRefNo, LocalDate date, Map<LocalDate, Long> shortages) {
         this.productRefNo = productRefNo;
         this.date = date;
         this.shortages = shortages;
     }
 
-    public static Builder builder(String productRefNo, LocalDate date) {
+    static Builder builder(String productRefNo, LocalDate date) {
         return new Builder(productRefNo, date);
     }
 
-    public static class Builder {
+    String getProductRefNo() {
+        return productRefNo;
+    }
+
+    LocalDate getDate() {
+        return date;
+    }
+
+    <T> Stream<T> mapForEach(BiFunction<LocalDate, Long, T> func) {
+        return shortages.entrySet().stream()
+                .map(e -> func.apply(e.getKey(), e.getValue()));
+    }
+
+    static class Builder {
         private final String productRefNo;
         private final LocalDate date;
         private final Map<LocalDate, Long> shortages = new HashMap<>();
 
-        public Builder(String productRefNo, LocalDate date) {
+        Builder(String productRefNo, LocalDate date) {
             this.productRefNo = productRefNo;
             this.date = date;
         }
 
-        public void forDay(LocalDate day, long levelOnDelivery) {
+        void forDay(LocalDate day, long levelOnDelivery) {
             shortages.put(day, -levelOnDelivery);
         }
 
-        public Shortages build() {
+        Shortages build() {
             return new Shortages(productRefNo, date, shortages);
         }
     }

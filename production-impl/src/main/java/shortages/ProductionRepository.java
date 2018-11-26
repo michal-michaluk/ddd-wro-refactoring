@@ -12,11 +12,12 @@ class ProductionRepository {
     private List<ProductionEntity> productions;
 
     public ProductionRepository(List<ProductionEntity> productions) {
+        // inject dao instead fetched data
         this.productions = productions;
     }
 
     public Production get() {
-        // productions = dao.fetchProduction()
+        // productions = dao.fetchProduction(productRefNo)
 
         String productRefNo = productions
                 .stream()
