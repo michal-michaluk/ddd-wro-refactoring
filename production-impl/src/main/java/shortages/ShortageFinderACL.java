@@ -8,7 +8,7 @@ import external.CurrentStock;
 import java.time.LocalDate;
 import java.util.List;
 
-public class ShortageFinder {
+public class ShortageFinderACL {
 
     /**
      * Production at day of expected delivery is quite complex:
@@ -38,7 +38,7 @@ public class ShortageFinder {
         return gap;
     }
 
-    private ShortageFinder() {
+    private ShortageFinderACL() {
     }
 
 }
