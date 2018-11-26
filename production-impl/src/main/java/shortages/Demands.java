@@ -33,5 +33,9 @@ public class Demands {
         public long getLevel() {
             return level;
         }
+
+        public long getLevelOnDelivery(long level, long produced) {
+            return 0;
+        }
     }
 }

@@ -4,6 +4,7 @@ import entities.DemandEntity;
 import entities.ProductionEntity;
 import entities.ShortageEntity;
 import external.CurrentStock;
+import tools.ShortageFinder;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -32,13 +33,50 @@ public class ShortageFinderACL {
      */
     public static List<ShortageEntity> findShortages(LocalDate today, int daysAhead, CurrentStock stock,
                                                      List<ProductionEntity> productions, List<DemandEntity> demands) {
-        ShortageSomethingRepository repository = new ShortageSomethingRepository(stock, today, daysAhead, new ProductionRepository(productions), new DemandRepository(demands));
-        ShortageSomething shortageSomething = repository.get();
-        List<ShortageEntity> gap = shortageSomething.findShortages();
-        return gap;
+
+        List<ShortageEntity> oldModelCalculation = ShortageFinder.findShortages(today, daysAhead, stock, productions, demands);
+
+        if (Features.ENABLE_NEW_SHORTAGES_CALCULATION.isActive()) {
+            try {
+                ShortageSomethingRepository repository = new ShortageSomethingRepository(stock, today, daysAhead, new ProductionRepository(productions), new DemandRepository(demands));
+                ShortageSomething shortageSomething = repository.get();
+                List<ShortageEntity> newModelCalculation = shortageSomething.findShortages();
+
+                Diff diff = compareResults(oldModelCalculation, newModelCalculation);
+
+                if (diff.anyDifferences()) {
+                    logScenario(diff, today, daysAhead, stock, productions, demands);
+                }
+
+                if (Features.RETURN_NEW_SHORTAGES_CALCULATION.isActive()) {
+                    return newModelCalculation;
+                }
+            } catch (Throwable t) {
+                logScenarioError(t, oldModelCalculation, today, daysAhead, stock, productions, demands);
+                return oldModelCalculation;
+            }
+        }
+        return oldModelCalculation;
+    }
+
+    private static void logScenarioError(Throwable throwable, List<ShortageEntity> oldModelCalculation, LocalDate today, int daysAhead, CurrentStock stock, List<ProductionEntity> productions, List<DemandEntity> demands) {
+
+    }
+
+    private static void logScenario(Diff diff, LocalDate today, int daysAhead, CurrentStock stock, List<ProductionEntity> productions, List<DemandEntity> demands) {
+
+    }
+
+    private static Diff compareResults(List<ShortageEntity> oldModelCalculation, List<ShortageEntity> newModelCalculation) {
+        return new Diff();
     }
 
     private ShortageFinderACL() {
     }
 
+    private static class Diff {
+        public boolean anyDifferences() {
+            return false;
+        }
+    }
 }
